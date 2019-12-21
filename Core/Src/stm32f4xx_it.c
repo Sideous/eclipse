@@ -19,10 +19,13 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+
 #include "stm32f4xx_it.h"
+
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +61,10 @@
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-
+extern I2C_HandleTypeDef hi2c1;
+static int i;
+static char slave_send;
+extern struct input  *req, *resp;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -196,6 +202,113 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles I2C1 event interrupt.
+  */
+void I2C1_EV_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C1_EV_IRQn 0 */
+//	extern struct iput  req, resp;
+
+//******
+i++; //remove
+if (i>100)
+	;
+
+		if(I2C1->SR1 & I2C_SR1_ADDR)
+		{   //if so clear by reading sr2 and whether to read
+			//from master or send to master
+
+			if(I2C1->SR2 & I2C_SR2_TRA)
+			{   slave_send=1;//11/17/19 true; //send mode
+				resp->bite=0;
+				//tx_strobe=1;
+	//	            rx_strobe=0;
+			   // myled=1;
+			}
+			else
+			{
+	//	        	rx_strobe=1;
+	//	            tx_strobe=0;
+				slave_send=0;//11/17/19 false; //receive mode
+				req->bite=0;
+				i=0;
+				req->complete=0; //11/17/19 false;
+				req->length=0;
+				//myled = 1; //led is on
+			}
+
+		}
+
+#if 0
+	    //check if a byte has been received
+	    if((I2C1->SR1 & I2C_SR1_RXNE) ||(I2C1->SR1 & I2C_SR1_BTF))
+	    {   req->buf[req->bite]=I2C1->DR;
+	        ++req->bite;
+	        req->length=req->bite;
+
+	        if(i & I2C_SR1_ARLO)
+	         {   //myled=1;
+	             resp->buf[0]=I2C1->CR2;//++j;
+	             resp->buf[1]=0x07;//++j;
+	         }
+
+
+	        //check if stop has been received
+	        if(I2C1->SR1 & I2C_SR1_STOPF)
+	        {    //req->complete=true;
+	        	 req->complete=true;
+	             I2C1->CR1&=~I2C_CR1_STOP;//clears stop flag
+	             //myled=0;
+//	             rx_strobe=0;
+	        }
+	        ++i;
+	    }
+	    else if((I2C1->SR1 & I2C_SR1_TXE) && slave_send)
+	    {
+	        if(resp->bite >= resp->length)
+	        {   I2C1->CR1 |= I2C_CR1_STOP; // send stop bit
+	            resp->complete=true;
+//	            tx_strobe=0;
+	            I2C1->CR1&=~I2C_CR1_STOP;//clears stop flag
+	            if( I2C1->DR )
+	                ;
+	            slave_send=false;
+	            resp->buf[0]=req->buf[0]=0;
+	            resp->buf[1]=req->buf[1]=0;
+
+	        }
+	        else
+	        {   I2C1->DR=resp->buf[resp->bite];
+	 //           tx_strobe=1;
+	            ++resp->bite;
+	            //myled=1;
+	        }
+	    }
+#endif
+//******
+  /* USER CODE END I2C1_EV_IRQn 0 */
+  HAL_I2C_EV_IRQHandler(&hi2c1);
+
+  /* USER CODE BEGIN I2C1_EV_IRQn 1 */
+
+  /* USER CODE END I2C1_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C1 error interrupt.
+  */
+void I2C1_ER_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C1_ER_IRQn 0 */
+
+  /* USER CODE END I2C1_ER_IRQn 0 */
+  HAL_I2C_ER_IRQHandler(&hi2c1);
+  /* USER CODE BEGIN I2C1_ER_IRQn 1 */
+
+  /* USER CODE END I2C1_ER_IRQn 1 */
+}
 
 /* USER CODE BEGIN 1 */
 

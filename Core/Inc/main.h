@@ -32,7 +32,25 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#define true 1
+#define false 0
+//extern struct input  req, resp;
+/*
+struct iput
+{   int bite;
+	char buf[8];//11/30, bite;
+    char length;
+    char complete;
+};*/
+struct input
+{   int bite;
+	char buf[8];//11/30, bite;
+    char length;
+    char complete;
+};
+extern struct input  *req, *resp;
+extern struct message Cmd, Rep;
+extern int k;
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
